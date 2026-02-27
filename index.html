@@ -3,161 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quick Copy Pro (Compressed)</title>
+    <title>Quick Chat Mobile</title>
     <style>
-        * { touch-action: manipulation; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: -apple-system, sans-serif; background: #f4f4f9; margin: 0; padding: 15px; }
-        .card { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin: auto; }
-        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 12px; font-size: 16px; display: block; }
-        
-        /* ปรับปุ่มเลือกไฟล์ให้ชัดเจน */
-        .file-input-wrapper {
-            margin-bottom: 15px;
+        /* ป้องกันการเลือกข้อความและการซูมระดับ CSS */
+        * {
+            touch-action: manipulation; /* ป้องกัน Double Tap Zoom */
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
         }
-        #imgInput { font-size: 14px; width: 100%; padding: 8px; border: 1px dashed #bbb; background: #fafafa; }
-        
-        #save-btn { width: 100%; padding: 15px; background: #075e54; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; }
-        
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .copy-btn { 
-            background: white; border: 2px solid #075e54; color: #075e54; 
-            padding: 20px 10px; border-radius: 15px; text-align: center; 
-            font-weight: bold; position: relative;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
-        .copy-btn:active { background: #e8f5e9; transform: scale(0.95); }
-        .has-img::after { content: "🖼️"; position: absolute; top: 5px; right: 5px; font-size: 12px; }
-        
-        .status-toast {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: white; padding: 12px 24px;
-            border-radius: 30px; font-size: 14px; display: none; z-index: 1000;
+
+        .card {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h2 { margin-top: 0; color: #1c1e21; text-align: center; font-size: 1.5rem; }
+
+        input, textarea {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 12px;
+            border: 2px solid #e4e6eb;
+            border-radius: 12px;
+            font-size: 16px; /* ป้องกัน iOS Auto-zoom เมื่อ Focus */
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus { border-color: #1877f2; }
+
+        #save-btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* แบ่ง 2 คอลัมน์บนมือถือ */
+            gap: 10px;
+            width: 100%;
+            max-width: 500px;
+            margin-top: 10px;
+        }
+
+        .copy-btn {
+            background-color: white;
+            border: 2px solid #1877f2;
+            color: #1877f2;
+            padding: 15px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .copy-btn:active {
+            background-color: #e7f3ff;
+            transform: scale(0.95);
+        }
+
+        .success {
+            background-color: #42b72a !important;
+            color: white !important;
+            border-color: #42b72a !important;
+        }
+
+        .delete-all {
+            margin-top: 30px;
+            color: #bcc0c4;
+            font-size: 12px;
+            text-decoration: underline;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h3 style="margin:0 0 15px 0; text-align:center;">บันทึกข้อความ + รูป</h3>
-    <input type="text" id="title" placeholder="ชื่อหัวข้อปุ่ม">
-    <textarea id="content" rows="2" placeholder="ข้อความที่ต้องการคัดลอก"></textarea>
-    
-    <div class="file-input-wrapper">
-        <label style="font-size: 14px; color: #666; display: block; margin-bottom: 5px;">แนบรูปภาพ (ถ้ามี):</label>
-        <input type="file" id="imgInput" accept="image/*">
+    <div class="card">
+        <h2>📱 ทางลัดตอบแชท</h2>
+        <input type="text" id="title" placeholder="ชื่อหัวข้อ (เช่น เลขบัญชี)">
+        <textarea id="content" rows="3" placeholder="ข้อความที่จะก๊อปปี้..."></textarea>
+        <button id="save-btn" onclick="saveData()">+ เพิ่มปุ่มทางลัด</button>
     </div>
 
-    <button id="save-btn" onclick="saveShortcut()">บันทึกทางลัด</button>
-</div>
+    <div id="btn-grid" class="grid-container">
+        </div>
 
-<div id="btn-grid" class="grid"></div>
-<div id="toast" class="status-toast"></div>
+    <div class="delete-all" onclick="clearAll()">ล้างข้อมูลทั้งหมด</div>
 
 <script>
-    let processedImgBase64 = "";
+    // โหลดข้อมูลเก่าเมื่อเปิดหน้าเว็บ
+    window.onload = loadButtons;
 
-    // ฟังก์ชันบีบอัดรูปภาพเมื่อมีการเลือกไฟล์
-    document.getElementById('imgInput').onchange = function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                // สร้าง Canvas เพื่อบีบอัดรูป
-                const canvas = document.createElement('canvas');
-                const MAX_WIDTH = 600; // ลดขนาดความกว้างเหลือ 600px เพื่อประหยัดพื้นที่
-                let width = img.width;
-                let height = img.height;
-
-                if (width > MAX_WIDTH) {
-                    height *= MAX_WIDTH / width;
-                    width = MAX_WIDTH;
-                }
-
-                canvas.width = width;
-                canvas.height = height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // แปลงเป็น base64 แบบคุณภาพ 0.7 (70%)
-                processedImgBase64 = canvas.toDataURL('image/jpeg', 0.7);
-            };
-            img.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-    };
-
-    async function copyBoth(text, imgData) {
-        try {
-            // คัดลอกข้อความลง Clipboard ก่อนเป็นหลัก
-            await navigator.clipboard.writeText(text);
-
-            if (imgData) {
-                // พยายามคัดลอกรูปภาพด้วย (เฉพาะ Browser ที่รองรับ)
-                const response = await fetch(imgData);
-                const blob = await response.blob();
-                const item = new ClipboardItem({
-                    "text/plain": new Blob([text], { type: "text/plain" }),
-                    [blob.type]: blob
-                });
-                await navigator.clipboard.write([item]);
-                showToast("✅ ก๊อปปี้ข้อความ + รูปแล้ว!");
-            } else {
-                showToast("✅ ก๊อปปี้ข้อความแล้ว!");
-            }
-        } catch (err) {
-            // ถ้าคัดลอกรูปไม่ได้ ให้ก๊อปแค่ข้อความ
-            navigator.clipboard.writeText(text);
-            showToast("✅ ก๊อปได้เฉพาะข้อความ");
-        }
-    }
-
-    function saveShortcut() {
+    function saveData() {
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
-        if (!title || !content) {
-            alert("กรุณากรอกชื่อและข้อความครับ");
-            return;
-        }
 
-        const shortcuts = JSON.parse(localStorage.getItem('shortcuts_v4') || '[]');
-        shortcuts.push({ title, content, img: processedImgBase64 });
-        
-        try {
-            localStorage.setItem('shortcuts_v4', JSON.stringify(shortcuts));
-            render();
-            // Reset fields
-            document.getElementById('title').value = '';
-            document.getElementById('content').value = '';
-            document.getElementById('imgInput').value = '';
-            processedImgBase64 = "";
-        } catch (e) {
-            alert("หน่วยความจำเต็ม! ลองใช้รูปที่มีขนาดเล็กลง หรือลบปุ่มเก่าออกบ้างครับ");
-        }
+        if (!title || !content) return alert("กรอกข้อมูลให้ครบก่อนครับ");
+
+        const newData = { title, content };
+        let shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+        shortcuts.push(newData);
+        localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+
+        renderButtons();
+        document.getElementById('title').value = '';
+        document.getElementById('content').value = '';
     }
 
-    function render() {
+    function loadButtons() {
+        renderButtons();
+    }
+
+    function renderButtons() {
         const grid = document.getElementById('btn-grid');
         grid.innerHTML = '';
-        const shortcuts = JSON.parse(localStorage.getItem('shortcuts_v4') || '[]');
+        const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+
         shortcuts.forEach((item, index) => {
             const btn = document.createElement('div');
-            btn.className = 'copy-btn' + (item.img ? ' has-img' : '');
+            btn.className = 'copy-btn';
             btn.innerText = item.title;
-            btn.onclick = () => copyBoth(item.content, item.img);
+            
+            btn.onclick = function() {
+                copyToClipboard(item.content, btn);
+            };
+            
             grid.appendChild(btn);
         });
     }
 
-    function showToast(msg) {
-        const t = document.getElementById('toast');
-        t.innerText = msg;
-        t.style.display = 'block';
-        setTimeout(() => t.style.display = 'none', 2000);
+    function copyToClipboard(text, element) {
+        const originalText = element.innerText;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            element.innerText = "✅ คัดลอกแล้ว";
+            element.classList.add('success');
+            
+            setTimeout(() => {
+                element.innerText = originalText;
+                element.classList.remove('success');
+            }, 800);
+        });
     }
 
-    window.onload = render;
+    function clearAll() {
+        if(confirm("ต้องการลบปุ่มทั้งหมดใช่ไหม?")) {
+            localStorage.removeItem('shortcuts');
+            renderButtons();
+        }
+    }
 </script>
 
 </body>
