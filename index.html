@@ -3,144 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quick Chat Mobile</title>
-    
-    <link rel="apple-touch-icon" href="icon.png.jpg">
-    
-    <link rel="icon" type="image/png" href="icon.png.jpg">
+    <title>Quick Chat Mobile Pro</title>
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
     <style>
-        /* ป้องกันการเลือกข้อความและการซูมระดับ CSS */
-        * {
-            touch-action: manipulation; /* ป้องกัน Double Tap Zoom */
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            margin: 0;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .card {
-            width: 100%;
-            max-width: 500px;
-            background: white;
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-
+        * { touch-action: manipulation; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .card { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
         h2 { margin-top: 0; color: #1c1e21; text-align: center; font-size: 1.5rem; }
-
-        input, textarea {
-            width: 100%;
-            padding: 14px;
-            margin-bottom: 12px;
-            border: 2px solid #e4e6eb;
-            border-radius: 12px;
-            font-size: 16px; /* ป้องกัน iOS Auto-zoom เมื่อ Focus */
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
+        input, textarea { width: 100%; padding: 14px; margin-bottom: 12px; border: 2px solid #e4e6eb; border-radius: 12px; font-size: 16px; outline: none; }
         input:focus, textarea:focus { border-color: #1877f2; }
-
-        #save-btn {
-            width: 100%;
-            padding: 15px;
-            background-color: #1877f2;
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr; /* แบ่ง 2 คอลัมน์บนมือถือ */
-            gap: 10px;
-            width: 100%;
-            max-width: 500px;
-            margin-top: 10px;
-        }
-
-        .copy-btn {
-            background-color: white;
-            border: 2px solid #1877f2;
-            color: #1877f2;
-            padding: 15px 10px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-            word-wrap: break-word;
-        }
-
-        .copy-btn:active {
-            background-color: #e7f3ff;
-            transform: scale(0.95);
-        }
-
-        .success {
-            background-color: #42b72a !important;
-            color: white !important;
-            border-color: #42b72a !important;
-        }
-
-        .delete-all {
-            margin-top: 30px;
-            color: #bcc0c4;
-            font-size: 12px;
-            text-decoration: underline;
-            cursor: pointer;
-        }
+        
+        #save-btn { width: 100%; padding: 15px; background-color: #1877f2; color: white; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; margin-bottom: 20px; }
+        
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 500px; margin-top: 10px; }
+        .copy-btn { background-color: white; border: 2px solid #1877f2; color: #1877f2; padding: 15px 10px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; word-wrap: break-word; transition: 0.2s; }
+        
+        /* สไตล์ปุ่มเมื่ออยู่ในโหมดต่างๆ */
+        .copy-btn.edit-mode { border-color: #f39c12; color: #f39c12; animation: shake 0.5s infinite; }
+        .copy-btn.delete-mode { border-color: #e74c3c; color: #e74c3c; animation: shake 0.5s infinite; }
+        @keyframes shake { 0% {transform: rotate(1deg)} 50% {transform: rotate(-1deg)} 100% {transform: rotate(1deg)} }
+        
+        .success { background-color: #42b72a !important; color: white !important; border-color: #42b72a !important; }
+        
+        /* แถบเมนูจัดการด้านล่าง */
+        .admin-controls { display: flex; gap: 10px; width: 100%; max-width: 500px; margin-top: 30px; }
+        .admin-btn { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-edit { background: #f39c12; color: white; }
+        .btn-delete { background: #e74c3c; color: white; }
+        .btn-active { outline: 3px solid #333; transform: scale(0.95); opacity: 0.8; }
+        
+        .delete-all { margin-top: 20px; color: #bcc0c4; font-size: 12px; text-decoration: underline; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2>📱 ทางลัดตอบแชท</h2>
+        <h2 id="form-title">📱 ทางลัดตอบแชท</h2>
+        <input type="hidden" id="edit-index" value="-1">
         <input type="text" id="title" placeholder="ชื่อหัวข้อ (เช่น เลขบัญชี)">
         <textarea id="content" rows="3" placeholder="ข้อความที่จะก๊อปปี้..."></textarea>
-        <button id="save-btn" onclick="saveData()">+ เพิ่มปุ่มทางลัด</button>
+        <button id="save-btn" onclick="saveData()">+ บันทึกทางลัด</button>
     </div>
 
-    <div id="btn-grid" class="grid-container">
-        </div>
+    <div id="btn-grid" class="grid-container"></div>
+
+    <div class="admin-controls">
+        <button id="edit-mode-btn" class="admin-btn btn-edit" onclick="toggleMode('edit')">✏️ แก้ไข</button>
+        <button id="delete-mode-btn" class="admin-btn btn-delete" onclick="toggleMode('delete')">🗑️ ลบ</button>
+    </div>
 
     <div class="delete-all" onclick="clearAll()">ล้างข้อมูลทั้งหมด</div>
 
 <script>
-    // โหลดข้อมูลเก่าเมื่อเปิดหน้าเว็บ
-    window.onload = loadButtons;
+    let currentMode = 'normal'; // normal, edit, delete
+
+    window.onload = renderButtons;
+
+    function toggleMode(mode) {
+        if (currentMode === mode) {
+            currentMode = 'normal';
+        } else {
+            currentMode = mode;
+        }
+        
+        // อัปเดต UI ปุ่มควบคุม
+        document.getElementById('edit-mode-btn').classList.toggle('btn-active', currentMode === 'edit');
+        document.getElementById('delete-mode-btn').classList.toggle('btn-active', currentMode === 'delete');
+        
+        renderButtons();
+    }
 
     function saveData() {
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
+        const editIndex = parseInt(document.getElementById('edit-index').value);
 
         if (!title || !content) return alert("กรอกข้อมูลให้ครบก่อนครับ");
 
-        const newData = { title, content };
         let shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
-        shortcuts.push(newData);
-        localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
 
+        if (editIndex > -1) {
+            shortcuts[editIndex] = { title, content };
+            document.getElementById('edit-index').value = "-1";
+            document.getElementById('save-btn').innerText = "+ เพิ่มปุ่มทางลัด";
+            document.getElementById('form-title').innerText = "📱 ทางลัดตอบแชท";
+            currentMode = 'normal';
+            document.getElementById('edit-mode-btn').classList.remove('btn-active');
+        } else {
+            shortcuts.push({ title, content });
+        }
+
+        localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
         renderButtons();
+        
         document.getElementById('title').value = '';
         document.getElementById('content').value = '';
-    }
-
-    function loadButtons() {
-        renderButtons();
     }
 
     function renderButtons() {
@@ -151,23 +109,52 @@
         shortcuts.forEach((item, index) => {
             const btn = document.createElement('div');
             btn.className = 'copy-btn';
+            if (currentMode === 'edit') btn.classList.add('edit-mode');
+            if (currentMode === 'delete') btn.classList.add('delete-mode');
+            
             btn.innerText = item.title;
             
             btn.onclick = function() {
-                copyToClipboard(item.content, btn);
+                if (currentMode === 'edit') {
+                    prepareEdit(index);
+                } else if (currentMode === 'delete') {
+                    removeOne(index);
+                } else {
+                    copyToClipboard(item.content, btn);
+                }
             };
             
             grid.appendChild(btn);
         });
     }
 
+    function prepareEdit(index) {
+        const shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+        const item = shortcuts[index];
+        
+        document.getElementById('title').value = item.title;
+        document.getElementById('content').value = item.content;
+        document.getElementById('edit-index').value = index;
+        
+        document.getElementById('save-btn').innerText = "💾 ยืนยันการแก้ไข";
+        document.getElementById('form-title').innerText = "✏️ กำลังแก้ไข...";
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function removeOne(index) {
+        if(confirm("ลบหัวข้อนี้ใช่ไหม?")) {
+            let shortcuts = JSON.parse(localStorage.getItem('shortcuts') || '[]');
+            shortcuts.splice(index, 1);
+            localStorage.setItem('shortcuts', JSON.stringify(shortcuts));
+            renderButtons();
+        }
+    }
+
     function copyToClipboard(text, element) {
         const originalText = element.innerText;
-        
         navigator.clipboard.writeText(text).then(() => {
             element.innerText = "✅ คัดลอกแล้ว";
             element.classList.add('success');
-            
             setTimeout(() => {
                 element.innerText = originalText;
                 element.classList.remove('success');
